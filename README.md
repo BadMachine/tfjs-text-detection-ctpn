@@ -59,5 +59,7 @@ import CTPN from 'tfjs-text-detection-ctpn';
 <img src="/test/007.jpg" width=320 height=240 /><img src="/test/predicted/007_predicted.jpg" width=320 height=240 />
 <img src="/test/COCO_train2014_000000004172.jpg" width=320 height=210 /><img src="/test/predicted/COCO_train2014_000000004172_predicted.jpg" width=320 height=210 />
 <img src="/test/lebron_james.jpg" width=300 height=250 /> <img src="/test/lebron_james_predicted.jpg" width=300 height=250 />
+<img src="/test/signs.jpg" width=300 height=250 /> <img src="/test/signs_predicted.jpg" width=300 height=250 />
+<img src="/test/orwell.jpg" width=300 height=250 /> <img src="/test/orewll_predicted.jpg" width=300 height=250 />
 
 ***
