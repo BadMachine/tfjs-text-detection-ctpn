@@ -1,6 +1,6 @@
 {
   "name": "tfjs-text-detection-ctpn",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TensorflowJS text detection implementation (inference), mainly based on ctpn model in tensorflow, id card detect, connectionist text proposal network",
   "type": "module",
   "main": "main.js",

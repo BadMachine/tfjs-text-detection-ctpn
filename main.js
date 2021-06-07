@@ -1,16 +1,17 @@
 import * as tf from '@tensorflow/tfjs-node-gpu';
 import * as fs from 'fs';
 import * as PImage from 'pureimage';
-
+import path from 'path';
 import { proposal_layer } from './rpn_msr/proposal_layer_tf.js';
 import { resize_im } from "./utils/resize.js";
 import { TextDetector } from './text_connector/detectors.js';
 import { RGB2BGR } from './utils/RGB2BGR.js';
 import { _get_blobs } from "./fast_rcnn/inference_blob.js";
+const __dirname = path.resolve();
 
 export default class CTPN{
     constructor(config) {
-        this.model = tf.loadGraphModel(`file://${__dirname}/ctpn_web/model.json`);//tf.loadGraphModel('file://./ctpn_web/model.json');
+        this.model = tf.loadGraphModel(`file://./ctpn_web/model.json`); //tf.loadGraphModel('file://./ctpn_web/model.json');
         this.cfg = config;
     }
 
@@ -78,23 +79,23 @@ export default class CTPN{
 
 }
 
-// (async ()=> {
-//     const cfg = {
-//         NMS_FUNCTION: 'AUTH',
-//         ANCHOR_SCALES: [16],
-//         PIXEL_MEANS: tf.tensor([[[102.9801, 115.9465, 122.7717]]]),
-//         SCALES: [600,] ,
-//         MAX_SIZE:  1000,
-//         HAS_RPN: true,
-//         DETECT_MODE: 'O',
-//         pre_nms_topN: 12000,
-//         post_nms_topN: 2000,
-//         nms_thresh:0.7,
-//         min_size: 8,
-//     };
-//     const ctpn = new CTPN(cfg);
-//     const image = './test/777.jpg';
-//     const predicted = await ctpn.predict(image);
-//     console.log(predicted);
-//     ctpn.draw(image,'res.jpg',...predicted, 'black')
-// })();
+(async ()=> {
+    const cfg = {
+        NMS_FUNCTION: 'AUTH',
+        ANCHOR_SCALES: [16],
+        PIXEL_MEANS: tf.tensor([[[102.9801, 115.9465, 122.7717]]]),
+        SCALES: [600,] ,
+        MAX_SIZE:  1000,
+        HAS_RPN: true,
+        DETECT_MODE: 'O',
+        pre_nms_topN: 12000,
+        post_nms_topN: 2000,
+        nms_thresh:0.7,
+        min_size: 8,
+    };
+    const ctpn = new CTPN(cfg);
+    const image = './test/007.jpg';
+    const predicted = await ctpn.predict(image);
+    console.log(predicted);
+    ctpn.draw(image,'res.jpg',...predicted, 'black')
+})();
