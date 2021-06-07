@@ -1,0 +1,20 @@
+{
+  "name": "ctpn",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "deasync": "^0.1.21",
+    "mathjs": "^9.4.1",
+    "numeric": "^1.2.6",
+    "pureimage": "^0.3.2",
+    "slice": "^1.0.0",
+    "slice.js": "^1.1.1"
+  }
+}
