@@ -38,7 +38,7 @@ export class TextProposalGraphBuilder{
     }
 
     meet_v_iou(index1, index2){
-        const overlaps_v = (index1, index2) =>{
+        const overlaps_v = (index1, index2) => {
             const h1 = this.heights[index1];
             const h2 = this.heights[index2];
             const y0 = Math.max(this.text_proposals[index2][1], this.text_proposals[index1][1]);
@@ -46,7 +46,7 @@ export class TextProposalGraphBuilder{
             return Math.max(0, y1-y0+1)/Math.min(h1, h2);
         }
 
-        const size_similarity = (index1, index2)=>{
+        const size_similarity = (index1, index2) => {
            const h1 = this.heights[index1]
            const h2 = this.heights[index2]
             return Math.min(h1, h2) / Math.max(h1, h2);
@@ -57,33 +57,38 @@ export class TextProposalGraphBuilder{
 
     is_succession_node(index, succession_index) {
         const precursors = this.get_precursors(succession_index);
-        return this.scores[index] >= Math.max(this.scores[precursors]) ? true : false
+        return tf.greaterEqual(this.scores.gather(index), tf.max(this.scores.gather(precursors)) ).arraySync();// here
     }
     build_graph(text_proposals, scores, im_size){
         this.text_proposals = text_proposals.arraySync();
-        this.scores = ravel(scores).arraySync();
+        this.scores = ravel(scores);
         this.im_size = im_size;
         const h1 = text_proposals.slice([0,3], [text_proposals.shape[0],1]).reshape([text_proposals.shape[0]]);
         const h2 = text_proposals.slice([0,1], [text_proposals.shape[0],1]).reshape([text_proposals.shape[0]]);
         this.heights = tf.add(tf.sub(h1,h2), 1).arraySync();
         const boxes_table =  Array.from(Array(im_size[1]), () => []);
-        this.text_proposals.forEach((item, index)=>{ // here probably undry
+        this.text_proposals.forEach((item, index)=>{
              boxes_table[Math.round(item[0])].push(index);
          })
         this.boxes_table = boxes_table;
-        let graph = tf.zeros([text_proposals.shape[0], text_proposals.shape[0]], 'bool').arraySync();
+        let graph = tf.buffer([text_proposals.shape[0], text_proposals.shape[0]], 'bool');
         for(let index = 0; index < this.text_proposals.length; index++){
             let successions = this.get_successions(index);
             if (successions.length === 0) continue;
-            if (successions.length > 1) successions = [successions[successions.length-1]]; //weak fix
 
-            const succession_index = successions[argmax(this.scores[successions])];//succession_index=successions[np.argmax(scores[successions])]
-            if (this.is_succession_node(index, succession_index)) {
-                graph[index][succession_index] = true;
+            let succession_index;
+            if (successions.length > 1) {
+                succession_index = successions[argmax(this.scores.gather(successions).arraySync())];
+            }else {
+                succession_index = successions[0];
+            }
+
+           if (this.is_succession_node(index, succession_index)) {
+               graph.set(true, index, succession_index);
             }
 
         }
-        graph = tf.tensor(graph).cast('bool');
+        graph = graph.toTensor();
         return new Graph(graph);
     }
 }
