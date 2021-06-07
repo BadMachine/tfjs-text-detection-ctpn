@@ -40,30 +40,18 @@ export default class CTPN{
             if (tf.norm(box[0] - box[1]) < 5 || tf.norm(box[3] - box[0]) < 5) continue;
 
             const ctx = image.getContext('2d');
-
             ctx.beginPath();
             ctx.strokeStyle = color;
-            ctx.moveTo(box[0] / scale, box[1] / scale);
-
+            ctx.lineWidth = 4;
+            ctx.moveTo(box[0]/ scale, box[1]/ scale);
             ctx.lineTo(box[2] / scale, box[3] / scale);
-            ctx.moveTo(box[2] / scale, box[3] / scale);
-            ctx.lineTo(box[0] / scale, box[1] / scale);
-            ctx.moveTo(box[0] / scale, box[1] / scale);
 
             ctx.lineTo(box[0] / scale, box[1] / scale);
-            ctx.moveTo(box[0] / scale, box[1] / scale);
             ctx.lineTo(box[4] / scale, box[5] / scale);
-            ctx.moveTo(box[4] / scale, box[5] / scale);
 
             ctx.lineTo(box[6] / scale, box[7] / scale);
-            ctx.moveTo(box[6] / scale, box[7] / scale);
             ctx.lineTo(box[2] / scale, box[3] / scale);
-            ctx.moveTo(box[2] / scale, box[3] / scale);
 
-            ctx.lineTo(box[4] / scale, box[5] / scale);
-            ctx.moveTo(box[4] / scale, box[5] / scale);
-            ctx.lineTo(box[6] / scale, box[7] / scale);
-            ctx.moveTo(box[6] / scale, box[7] / scale);
             ctx.stroke();
             ctx.closePath();
 
@@ -76,3 +64,24 @@ export default class CTPN{
     }
 
 }
+
+(async ()=> {
+    const cfg = {
+        NMS_FUNCTION: 'TF',
+        ANCHOR_SCALES: [16],
+        PIXEL_MEANS: tf.tensor([[[102.9801, 115.9465, 122.7717]]]),
+        SCALES: [600,] ,
+        MAX_SIZE:  1000,
+        HAS_RPN: true,
+        DETECT_MODE: 'O',
+        pre_nms_topN: 12000,
+        post_nms_topN: 2000,
+        nms_thresh:0.7,
+        min_size: 8,
+    };
+    const ctpn = new CTPN(cfg);
+    const image = './test/007.jpg';
+    const predicted = await ctpn.predict(image);
+    console.log(predicted);
+    ctpn.draw(image,'res.jpg',...predicted, 'red')
+})();
