@@ -11,7 +11,7 @@ const __dirname = path.resolve();
 
 export default class CTPN{
     constructor(config) {
-        this.model = tf.loadGraphModel(`file://./ctpn_web/model.json`); //tf.loadGraphModel('file://./ctpn_web/model.json');
+        this.model = tf.loadGraphModel('https://cdn.jsdelivr.net/gh/BadMachine/tfjs-text-detection-ctpn/ctpn_web/model.json'); //tf.loadGraphModel('file://./ctpn_web/model.json');
         this.cfg = config;
     }
 
