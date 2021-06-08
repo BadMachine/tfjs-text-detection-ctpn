@@ -17,12 +17,7 @@ async function authNMS(dets, scores, thresh){
     const y2 = dets.slice([0,3], [dets.shape[0],1]).squeeze(); //y2 = dets[:, 3]
     //const scores = dets.slice([0,4], [dets.shape[0],1]).squeeze(); //y2 = dets[:, 3]
     let areas = tf.mul( x2.sub(x1).add(1), y2.sub(y1).add(1)) ;//areas = (x2 - x1 + 1) * (y2 - y1 + 1)
-    // try {
-    //     scores = scores.slice(0, 2000) // need to slice to improve performance
-    //     areas = areas.slice(0,2000)
-    // }catch(e){
-    //
-    // }
+
     let order = argSort(scores).reverse();//order = scores.argsort()[::-1]
 
     order = ravel(order);

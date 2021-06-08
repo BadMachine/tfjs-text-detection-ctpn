@@ -32,14 +32,12 @@ export default class CTPN{
         const boxes = tf.div(proposals, im_scales[0]);
         const textDetector = new TextDetector(this.cfg);
         const _boxes = await textDetector.detect(boxes, scores.reshape([scores.shape[0],1]), img.shape.slice(0,2));
-        _boxes.print()
         return [_boxes, scale];
         tf.engine().endScope()
     }
 
     async draw(image_name, writeTo, _boxes, scale, color){
         const image = await PImage.decodeJPEGFromStream(fs.createReadStream(`./${image_name}`));
-
         const boxes = _boxes.arraySync();
 
         for(let box of boxes){
@@ -69,23 +67,23 @@ export default class CTPN{
 
 }
 
-(async ()=> {
-    const cfg = {
-        NMS_FUNCTION: 'AUTH',
-        ANCHOR_SCALES: [16],
-        PIXEL_MEANS: tf.tensor([[[102.9801, 115.9465, 122.7717]]]),
-        SCALES: [600,] ,
-        MAX_SIZE:  1000,
-        HAS_RPN: true,
-        DETECT_MODE: 'O',
-        pre_nms_topN: 12000,
-        post_nms_topN: 2000,
-        nms_thresh:0.7,
-        min_size: 8,
-    };
-    const ctpn = new CTPN(cfg);
-    const image = './test/U0-gvjZbwWc.jpg';
-    const predicted = await ctpn.predict(image);
-    console.log(predicted);
-    ctpn.draw(image,'res.jpg',...predicted, 'red')
-})();
+// (async ()=> {
+//     const cfg = {
+//         NMS_FUNCTION: 'TF',
+//         ANCHOR_SCALES: [16],
+//         PIXEL_MEANS: tf.tensor([[[102.9801, 115.9465, 122.7717]]]),
+//         SCALES: [600,] ,
+//         MAX_SIZE:  1000,
+//         HAS_RPN: true,
+//         DETECT_MODE: 'O',
+//         pre_nms_topN: 12000,
+//         post_nms_topN: 2000,
+//         nms_thresh:0.7,
+//         min_size: 8,
+//     };
+//     const ctpn = new CTPN(cfg);
+//     const image = './test/007.jpg';
+//     const predicted = await ctpn.predict(image);
+//     console.log(predicted);
+//     ctpn.draw(image,'res.jpg',...predicted, 'red')
+// })();

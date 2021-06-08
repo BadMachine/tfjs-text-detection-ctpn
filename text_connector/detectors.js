@@ -14,7 +14,7 @@ export class TextDetector{
     }
 
     async detect(text_proposals, scores, size){
-        //console.log(this.text_proposal_connector)
+
         const scoresFlat = ravel(scores);
         let keep_inds = await tf.whereAsync(scoresFlat.greater(TextLineCfg.TEXT_PROPOSALS_MIN_SCORE));
         keep_inds = ravel(keep_inds).cast('int32');
