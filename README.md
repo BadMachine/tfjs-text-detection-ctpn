@@ -2,7 +2,7 @@
 TensorflowJS text detection implementation (inference), mainly based on ctpn model in tensorflow, id card detect, connectionist text proposal network
 The origin paper can be found [here](https://arxiv.org/abs/1609.03605). Also, the origin repo in caffe can be found in [here](https://github.com/tianzhi0549/CTPN). If you got any questions, check the issue first, if the problem persists, open a new issue.
 
-# Demo
+# Check out this project right in your browser!
 
 [Demo](https://badmachine.github.io/tfjs-react-text-detection-ctpn-Demo/).
 
