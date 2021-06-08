@@ -5,8 +5,10 @@ import {bbox_transform_inv, clip_boxes} from '../fast_rcnn/bbox_transform.js';
 import {ravel} from "../utils/ravel.js";
 import { argSort } from "../utils/argsort.js";
 
-export async function proposal_layer(cfg, rpn_cls_prob_reshape, rpn_bbox_pred, im_info, TEST, scales, _feat_stride = [16], anchor_scales = [16]){
-    const _anchors = generate_anchors( 16, [0.5, 1, 2], cfg.anchor_scales);
+export async function proposal_layer(cfg, rpn_cls_prob_reshape, rpn_bbox_pred, im_info, TEST, scales, _feat_stride = [16]){
+
+    const _anchors = generate_anchors( 16, [0.5, 1, 2], cfg.ANCHOR_SCALES);
+
     const _num_anchors = _anchors.shape[0];
 
     if(rpn_cls_prob_reshape.shape[0] !== 1) console.error('Only single item batches are supported');
@@ -14,7 +16,9 @@ export async function proposal_layer(cfg, rpn_cls_prob_reshape, rpn_bbox_pred, i
     const [height, width] = [ rpn_cls_prob_reshape.shape[1], rpn_cls_prob_reshape.shape[2]  ];
 
     const reshape = tf.reshape(rpn_cls_prob_reshape, [1, height, width, _num_anchors, 2]);
+
     let scores = tf.slice(reshape, [0,0,0,0,1],[1, height, width, _num_anchors,1]).reshape([1, height, width, _num_anchors])
+
     let bbox_deltas = rpn_bbox_pred.clone();
     let shift_x = tf.range(0, width).mul(_feat_stride);
     let shift_y = tf.range(0, height).mul(_feat_stride);
@@ -31,7 +35,6 @@ export async function proposal_layer(cfg, rpn_cls_prob_reshape, rpn_bbox_pred, i
     anchors = anchors.cast('int32');
     // Convert anchors into proposals via bbox transformations
     let proposals = bbox_transform_inv(anchors, bbox_deltas);
-
     // 2. clip predicted boxes to image
     proposals = clip_boxes(proposals, im_info.arraySync()[0].slice(0,2));//
     let keep = await _filter_boxes(proposals, cfg.min_size * 1);
@@ -59,7 +62,6 @@ export async function proposal_layer(cfg, rpn_cls_prob_reshape, rpn_bbox_pred, i
     proposals = tf.gather(proposals, keep.cast('int32')); //proposals = proposals[keep, :]
     scores = tf.gather(scores, keep.cast('int32')); //scores = scores[keep]
     bbox_deltas = tf.gather(bbox_deltas, keep.cast('int32')); //bbox_deltas=bbox_deltas[keep,:]
-
     return [ ravel(scores.cast('float32')), proposals.cast('float32'), bbox_deltas];
 }
 

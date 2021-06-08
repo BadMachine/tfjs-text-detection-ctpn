@@ -6,17 +6,25 @@ export async function nms(config){
 }
 
 function tf_nms(dets, scores, thresh){
-    return tf.image.nonMaxSuppression(dets, ravel(scores), 2000, 0.3,thresh);
+    return tf.image.nonMaxSuppression(dets, ravel(scores), 2000, 0.2,thresh);
 }
 
 async function authNMS(dets, scores, thresh){
+
     const x1 = dets.slice([0,0], [dets.shape[0],1]).squeeze(); //x1 = dets[:, 0]
     const y1 = dets.slice([0,1], [dets.shape[0],1]).squeeze(); //y1 = dets[:, 1]
     const x2 = dets.slice([0,2], [dets.shape[0],1]).squeeze(); //x2 = dets[:, 2]
     const y2 = dets.slice([0,3], [dets.shape[0],1]).squeeze(); //y2 = dets[:, 3]
     //const scores = dets.slice([0,4], [dets.shape[0],1]).squeeze(); //y2 = dets[:, 3]
-    const areas = tf.mul( x2.sub(x1).add(1), y2.sub(y1).add(1)) ;//areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+    let areas = tf.mul( x2.sub(x1).add(1), y2.sub(y1).add(1)) ;//areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+    // try {
+    //     scores = scores.slice(0, 2000) // need to slice to improve performance
+    //     areas = areas.slice(0,2000)
+    // }catch(e){
+    //
+    // }
     let order = argSort(scores).reverse();//order = scores.argsort()[::-1]
+
     order = ravel(order);
     let keep = tf.tensor1d([]);
     while(order.shape[0] > 0){
@@ -30,12 +38,12 @@ async function authNMS(dets, scores, thresh){
         const h = tf.maximum(0.0, yy2.sub(yy1).add(1) ); //h = np.maximum(0.0, yy2 - yy1 + 1)
         const inter = w.mul(h);
         const ovr = tf.div(inter, ( (areas.gather(i).add(areas.gather(order.slice(1,-1).cast('int32') ))).sub(inter) ));
-        let inds = await tf.whereAsync( ovr.lessEqual(thresh) );// inds = np.where(ovr <= thresh)[0]
+        let inds = await tf.whereAsync( ovr.lessEqual(thresh) ); // here is a bottleneck
         inds = ravel(inds);
         order = order.gather(inds.add(1).cast('int32') );
+
     }
-    //keep.print();
+
     return keep;
 }
 
-//module.exports = nms;

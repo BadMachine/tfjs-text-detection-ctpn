@@ -14,6 +14,7 @@ export default class CTPN{
     }
 
     async predict(image_path){
+        tf.engine().startScope()
         const image = RGB2BGR(tf.node.decodeImage(fs.readFileSync(image_path)).cast('float32'));
         const [img, scale] = resize_im(image, 600, 1200);
 
@@ -23,22 +24,25 @@ export default class CTPN{
             blobs.im_info = tf.tensor( [[im_blob.shape[1], im_blob.shape[2], im_scales[0]]]);
         }
         const model = await this.model;
+
         const raw = await model.executeAsync(img.expandDims());
         const [cls_prob, box_pred] = raw;
+
         let [scores, proposals, bbox_deltas] = await proposal_layer(this.cfg, cls_prob, box_pred, blobs.im_info,'TEST');
         const boxes = tf.div(proposals, im_scales[0]);
         const textDetector = new TextDetector(this.cfg);
         const _boxes = await textDetector.detect(boxes, scores.reshape([scores.shape[0],1]), img.shape.slice(0,2));
+        _boxes.print()
         return [_boxes, scale];
+        tf.engine().endScope()
     }
 
     async draw(image_name, writeTo, _boxes, scale, color){
         const image = await PImage.decodeJPEGFromStream(fs.createReadStream(`./${image_name}`));
 
         const boxes = _boxes.arraySync();
-        for(let box of boxes){
-            if (tf.norm(box[0] - box[1]) < 5 || tf.norm(box[3] - box[0]) < 5) continue;
 
+        for(let box of boxes){
             const ctx = image.getContext('2d');
             ctx.beginPath();
             ctx.strokeStyle = color;
@@ -65,23 +69,23 @@ export default class CTPN{
 
 }
 
-// (async ()=> {
-//     const cfg = {
-//         NMS_FUNCTION: 'A',
-//         ANCHOR_SCALES: [16],
-//         PIXEL_MEANS: tf.tensor([[[102.9801, 115.9465, 122.7717]]]),
-//         SCALES: [600,] ,
-//         MAX_SIZE:  1000,
-//         HAS_RPN: true,
-//         DETECT_MODE: 'O',
-//         pre_nms_topN: 12000,
-//         post_nms_topN: 2000,
-//         nms_thresh:0.7,
-//         min_size: 8,
-//     };
-//     const ctpn = new CTPN(cfg);
-//     const image = './test/signs.jpg';
-//     const predicted = await ctpn.predict(image);
-//     console.log(predicted);
-//     ctpn.draw(image,'res.jpg',...predicted, 'red')
-// })();
+(async ()=> {
+    const cfg = {
+        NMS_FUNCTION: 'AUTH',
+        ANCHOR_SCALES: [16],
+        PIXEL_MEANS: tf.tensor([[[102.9801, 115.9465, 122.7717]]]),
+        SCALES: [600,] ,
+        MAX_SIZE:  1000,
+        HAS_RPN: true,
+        DETECT_MODE: 'O',
+        pre_nms_topN: 12000,
+        post_nms_topN: 2000,
+        nms_thresh:0.7,
+        min_size: 8,
+    };
+    const ctpn = new CTPN(cfg);
+    const image = './test/U0-gvjZbwWc.jpg';
+    const predicted = await ctpn.predict(image);
+    console.log(predicted);
+    ctpn.draw(image,'res.jpg',...predicted, 'red')
+})();
